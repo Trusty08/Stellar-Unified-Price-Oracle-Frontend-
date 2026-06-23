@@ -18,9 +18,11 @@ function PriceDetailLoader() {
   )
 }
 
+const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASENAME}>
       <ErrorBoundary>
         <PreferencesProvider>
           <Layout>
