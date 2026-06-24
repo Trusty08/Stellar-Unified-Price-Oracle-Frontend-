@@ -73,3 +73,16 @@ export interface AlertFormData {
   lowerThreshold: string
   triggerOnce: boolean
 }
+
+export interface AlertsContextType {
+  alerts: Alert[]
+  addAlert: (alert: Omit<Alert, 'id' | 'createdAt' | 'lastTriggeredAt'>) => Alert
+  updateAlert: (id: string, updates: Partial<Omit<Alert, 'id' | 'createdAt'>>) => void
+  removeAlert: (id: string) => void
+  getAlertsForPair: (assetPair: string) => Alert[]
+  hasAlertsForPair: (assetPair: string) => boolean
+  activeCount: number
+  isPanelOpen: boolean
+  togglePanel: () => void
+  markAsRead: (id: string) => void
+}

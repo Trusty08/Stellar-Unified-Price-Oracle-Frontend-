@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor, fireEvent } from '@testing-library/re
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { Dashboard } from './Dashboard'
+import { AlertsProvider } from '../hooks/useAlerts'
 
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: ({ count, estimateSize }: { count: number; estimateSize: (i: number) => number }) => {
@@ -62,7 +63,9 @@ describe('Dashboard', () => {
   it('renders the title', () => {
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByText('Price Oracle Dashboard')).toBeInTheDocument()
@@ -71,7 +74,9 @@ describe('Dashboard', () => {
   it('shows loading skeletons when loading and no prices', () => {
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(document.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0)
@@ -92,7 +97,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByText('Something broke')).toBeInTheDocument()
@@ -113,7 +120,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     const emptyTexts = screen.getAllByText('No price feeds available')
@@ -135,7 +144,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getAllByText('BTC/USD').length).toBeGreaterThanOrEqual(1)
@@ -158,7 +169,9 @@ describe('Dashboard', () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     await user.click(screen.getByLabelText('Set alert for BTC/USD'))
@@ -182,7 +195,9 @@ describe('Dashboard', () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     await user.click(screen.getByLabelText('Set alert for BTC/USD'))
@@ -208,7 +223,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByPlaceholderText('Search by asset pair...')).toBeInTheDocument()
@@ -230,7 +247,9 @@ describe('Dashboard', () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
 
@@ -257,7 +276,9 @@ describe('Dashboard', () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
 
@@ -284,7 +305,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.queryByPlaceholderText('Search by asset pair...')).not.toBeInTheDocument()
@@ -306,7 +329,9 @@ describe('Dashboard', () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
 
@@ -339,7 +364,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter initialEntries={['/?search=btc']}>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByText('BTC/USD')).toBeInTheDocument()
@@ -365,7 +392,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter initialEntries={['/?confidence=high']}>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByText('BTC/USD')).toBeInTheDocument()
@@ -387,7 +416,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter initialEntries={['/?source=chainlink']}>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByText('BTC/USD')).toBeInTheDocument()
@@ -409,7 +440,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter initialEntries={['/?sort=price-high']}>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByText('BTC/USD')).toBeInTheDocument()
@@ -436,7 +469,9 @@ describe('Dashboard', () => {
     })
     render(
       <MemoryRouter initialEntries={['/?source=chainlink&confidence=high&sort=price-low']}>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(screen.getByText('ETH/USD')).toBeInTheDocument()
@@ -467,7 +502,9 @@ describe('snapshots', () => {
   it('loading', () => {
     const { container } = render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -488,7 +525,9 @@ describe('snapshots', () => {
     })
     const { container } = render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -509,7 +548,9 @@ describe('snapshots', () => {
     })
     const { container } = render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(container.firstChild).toMatchSnapshot()
@@ -530,7 +571,9 @@ describe('snapshots', () => {
     })
     const { container } = render(
       <MemoryRouter>
-        <Dashboard />
+        <AlertsProvider>
+          <Dashboard />
+        </AlertsProvider>
       </MemoryRouter>,
     )
     expect(container.firstChild).toMatchSnapshot()
