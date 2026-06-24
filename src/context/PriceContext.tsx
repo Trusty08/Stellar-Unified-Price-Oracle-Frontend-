@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, useCallback, type ReactNode } from 'react'
 import { useSwr } from '../hooks/useSwr'
 import { WebSocketClient, type ConnectionStatus } from '../api/websocket'
 import { fetchAllPrices, fetchPrice } from '../api/rest'
@@ -40,7 +40,7 @@ export function PriceProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const scheduleSettledState = (pair: string) => {
+  const scheduleSettledState = useCallback((pair: string) => {
     clearCleanupTimer(pair)
     const timer = setTimeout(() => {
       setLivePrices((prev) => {
@@ -54,9 +54,9 @@ export function PriceProvider({ children }: { children: ReactNode }) {
       cleanupTimersRef.current.delete(pair)
     }, 1200)
     cleanupTimersRef.current.set(pair, timer)
-  }
+  }, [])
 
-  const revalidatePair = async (pair: string, requestId: number) => {
+  const revalidatePair = useCallback(async (pair: string, requestId: number) => {
     try {
       const restPrice = await fetchPrice(pair)
 
@@ -85,7 +85,7 @@ export function PriceProvider({ children }: { children: ReactNode }) {
     } catch {
       // Keep optimistic data visible and let polling retry the canonical state.
     }
-  }
+  }, [scheduleSettledState])
 
   useEffect(() => {
     const client = new WebSocketClient()
@@ -120,17 +120,19 @@ export function PriceProvider({ children }: { children: ReactNode }) {
 
     client.connect()
 
+    const cleanupTimers = cleanupTimersRef.current
+
     return () => {
       unsubStatus()
       unsubMsg()
       client.disconnect()
       wsRef.current = null
-      for (const timer of cleanupTimersRef.current.values()) {
+      for (const timer of cleanupTimers.values()) {
         clearTimeout(timer)
       }
-      cleanupTimersRef.current.clear()
+      cleanupTimers.clear()
     }
-  }, [])
+  }, [revalidatePair, scheduleSettledState])
 
   useEffect(() => {
     setLivePrices((prev) => {
