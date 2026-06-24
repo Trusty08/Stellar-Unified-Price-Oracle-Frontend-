@@ -32,3 +32,7 @@ export const UpperOnly: Story = {
 export const LowerOnly: Story = {
   args: { count: 1, alerts: [makeAlert({ upperThreshold: null })] },
 }
+
+export const Empty: Story = {
+  args: { count: 0, alerts: [] },
+}

@@ -56,6 +56,7 @@ async function request<T>(path: string, init?: RequestInit, signal?: AbortSignal
 interface Waiter {
   resolve: (value: PriceHistoryResponse) => void
   reject: (reason: unknown) => void
+  signal?: AbortSignal
 }
 
 const pending = new Map<string, Waiter[]>()
@@ -72,12 +73,45 @@ function keyToLimitOffset(key: string): { limit: number; offset: number } {
   return { limit: Number(parts[parts.length - 2]), offset: Number(parts[parts.length - 1]) }
 }
 
+function notifyWaiters(waiters: Waiter[], result: PriceHistoryResponse) {
+  for (const w of waiters) {
+    if (w.signal?.aborted) {
+      w.reject(new DOMException('Aborted', 'AbortError'))
+    } else {
+      w.resolve(result)
+    }
+  }
+}
+
+function rejectWaiters(waiters: Waiter[], err: unknown) {
+  for (const w of waiters) {
+    if (w.signal?.aborted) {
+      w.reject(new DOMException('Aborted', 'AbortError'))
+    } else {
+      w.reject(err)
+    }
+  }
+}
+
 function flushCoalesced() {
   coalesceTimer = null
   if (pending.size === 0) return
 
   const snapshot = new Map(pending)
   pending.clear()
+
+  // Drop keys where all waiters already aborted
+  for (const [key, waiters] of snapshot) {
+    const active = waiters.filter((w) => !w.signal?.aborted)
+    if (active.length === 0) {
+      for (const w of waiters) w.reject(new DOMException('Aborted', 'AbortError'))
+      snapshot.delete(key)
+    } else {
+      snapshot.set(key, active)
+    }
+  }
+
+  if (snapshot.size === 0) return
 
   const keys = [...snapshot.keys()]
   const pairs = keys.map(keyToPair)
@@ -89,12 +123,12 @@ function flushCoalesced() {
         const pair = keyToPair(key)
         const result = byPair.get(pair)
         if (result) {
-          waiters.forEach((w) => w.resolve(result))
+          notifyWaiters(waiters, result)
         } else {
           const { limit, offset } = keyToLimitOffset(key)
           _fetchHistoryDirect(pair, limit, offset).then(
-            (r) => waiters.forEach((w) => w.resolve(r)),
-            (e) => waiters.forEach((w) => w.reject(e)),
+            (r) => notifyWaiters(waiters, r),
+            (e) => rejectWaiters(waiters, e),
           )
         }
       }
@@ -104,8 +138,8 @@ function flushCoalesced() {
         const pair = keyToPair(key)
         const { limit, offset } = keyToLimitOffset(key)
         _fetchHistoryDirect(pair, limit, offset).then(
-          (r) => waiters.forEach((w) => w.resolve(r)),
-          (e) => waiters.forEach((w) => w.reject(e)),
+          (r) => notifyWaiters(waiters, r),
+          (e) => rejectWaiters(waiters, e),
         )
       }
     })
@@ -145,19 +179,29 @@ export function fetchPriceHistory(
   offset = 0,
   _startTs?: number,
   _endTs?: number,
+  signal?: AbortSignal,
 ): Promise<PriceHistoryResponse> {
   const key = `${pair}:${limit}:${offset}`
 
   return new Promise<PriceHistoryResponse>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException('Aborted', 'AbortError'))
+      return
+    }
+
     const existing = pending.get(key)
     if (existing) {
-      existing.push({ resolve, reject })
+      existing.push({ resolve, reject, signal })
     } else {
-      pending.set(key, [{ resolve, reject }])
+      pending.set(key, [{ resolve, reject, signal }])
     }
     if (!coalesceTimer) {
       coalesceTimer = setTimeout(flushCoalesced, COALESCE_WINDOW_MS)
     }
+
+    signal?.addEventListener('abort', () => {
+      reject(new DOMException('Aborted', 'AbortError'))
+    }, { once: true })
   })
 }
 
