@@ -15,6 +15,7 @@
     "build:analyze": "ANALYZE=true vite build",
     "size-limit": "size-limit",
     "preview": "vite preview",
+    "test:e2e": "playwright test",
     "prepare": "husky || true",
     "storybook": "storybook dev -p 6006",
     "build:storybook": "storybook build"
@@ -49,6 +50,7 @@
     "@commitlint/cli": "^21.1.0",
     "@commitlint/config-conventional": "^21.1.0",
     "@eslint/js": "^9.24.0",
+    "@playwright/test": "1.52.0",
     "@size-limit/file": "^12.1.0",
     "@storybook/addon-a11y": "^8.6.18",
     "@storybook/addon-essentials": "^8.6.14",
