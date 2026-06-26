@@ -170,7 +170,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 checked={!preferences.analyticsOptOut}
                 onChange={(val) => {
                   updatePreference('analyticsOptOut', !val)
-                  try { localStorage.setItem('analyticsOptOut', !val ? '0' : '1') } catch (e) {}
+                  try { localStorage.setItem('analyticsOptOut', !val ? '0' : '1') } catch { /* storage unavailable */ }
                 }}
               />
             </div>

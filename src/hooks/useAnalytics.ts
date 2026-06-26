@@ -5,8 +5,8 @@ const id = (import.meta.env.VITE_ANALYTICS_ID as string) || undefined
 
 export function shouldCollect() {
   try {
-    if (typeof navigator !== 'undefined' && (navigator as any).doNotTrack === '1') return false
-  } catch (e) {}
+    if (typeof navigator !== 'undefined' && (navigator as Navigator & { doNotTrack?: string }).doNotTrack === '1') return false
+  } catch { /* ignore */ }
   if (typeof window === 'undefined') return false
   if (!provider || !id) return false
   if (localStorage.getItem('analyticsOptOut') === '1') return false
@@ -33,28 +33,33 @@ export function initAnalytics() {
   }
 }
 
-export function trackEvent(name: string, props?: Record<string, any>) {
+type WindowWithAnalytics = Window & {
+  plausible?: (event: string, opts?: { props?: Record<string, unknown> }) => void
+  umami?: { trackEvent?: (name: string, props?: Record<string, unknown>) => void; trackView?: (path?: string) => void }
+}
+
+export function trackEvent(name: string, props?: Record<string, unknown>) {
   if (!shouldCollect()) return
   try {
-    if ((window as any).plausible) {
-      ;(window as any).plausible(name, { props: props || {} })
-    } else if ((window as any).umami) {
-      ;(window as any).umami.trackEvent?.(name, props)
+    const w = window as WindowWithAnalytics
+    if (w.plausible) {
+      w.plausible(name, { props: props || {} })
+    } else if (w.umami) {
+      w.umami.trackEvent?.(name, props)
     }
-  } catch (e) {
-    // swallow
-  }
+  } catch { /* swallow */ }
 }
 
 export function trackPageview(path?: string) {
   if (!shouldCollect()) return
   try {
-    if ((window as any).plausible) {
-      ;(window as any).plausible('pageview')
-    } else if ((window as any).umami) {
-      ;(window as any).umami.trackView?.(path || location.pathname)
+    const w = window as WindowWithAnalytics
+    if (w.plausible) {
+      w.plausible('pageview')
+    } else if (w.umami) {
+      w.umami.trackView?.(path || location.pathname)
     }
-  } catch (e) {}
+  } catch { /* swallow */ }
 }
 
 export default function useAnalytics() {

@@ -4,4 +4,4 @@
 
 // Placeholder fallback to avoid TypeScript errors until generated types are
 // provided by CI or maintainers.
-export type OpenAPI = any
+export type OpenAPI = unknown
