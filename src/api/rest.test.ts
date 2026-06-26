@@ -49,14 +49,14 @@ function errorResponse(status: number, text: string) {
 // ---------------------------------------------------------------------------
 describe('fetchAllPrices', () => {
   it('fetches all prices without params', async () => {
-    mockFetch.mockResolvedValue(okResponse([{ assetPair: 'BTC/USD' }]))
+    mockFetch.mockResolvedValue(okResponse([{ assetPair: 'BTC/USD', price: 50000, timestamp: 1690000000000, confidence: 0.95, sources: ['chainlink'] }]))
     const result = await fetchAllPrices()
-    expect(result).toEqual([{ assetPair: 'BTC/USD' }])
+    expect(result).toEqual([{ assetPair: 'BTC/USD', price: 50000, timestamp: 1690000000000, confidence: 0.95, sources: ['chainlink'] }])
     expect(mockFetch.mock.calls[0][0]).toBe('/api/prices')
   })
 
   it('fetches filtered prices with pairs param', async () => {
-    mockFetch.mockResolvedValue(okResponse([{ assetPair: 'BTC/USD' }]))
+    mockFetch.mockResolvedValue(okResponse([{ assetPair: 'BTC/USD', price: 50000, timestamp: 1690000000000, confidence: 0.95, sources: ['chainlink'] }]))
     await fetchAllPrices(['BTC/USD'])
     expect(mockFetch.mock.calls[0][0]).toBe('/api/prices?pairs=BTC/USD')
   })
@@ -82,13 +82,13 @@ describe('fetchAllPrices', () => {
 // ---------------------------------------------------------------------------
 describe('fetchPrice', () => {
   it('fetches a single price', async () => {
-    mockFetch.mockResolvedValue(okResponse({ assetPair: 'BTC/USD', price: 50000 }))
+    mockFetch.mockResolvedValue(okResponse({ assetPair: 'BTC/USD', price: 50000, timestamp: 1690000000000, confidence: 0.95, sources: ['chainlink'] }))
     const result = await fetchPrice('BTC/USD')
-    expect(result).toEqual({ assetPair: 'BTC/USD', price: 50000 })
+    expect(result).toEqual({ assetPair: 'BTC/USD', price: 50000, timestamp: 1690000000000, confidence: 0.95, sources: ['chainlink'] })
   })
 
   it('encodes the pair parameter', async () => {
-    mockFetch.mockResolvedValue(okResponse({}))
+    mockFetch.mockResolvedValue(okResponse({ assetPair: 'ETH/BTC', price: 1, timestamp: 1690000000000, confidence: 0.5, sources: ['redstone'] }))
     await fetchPrice('ETH/BTC')
     expect(mockFetch.mock.calls[0][0]).toBe('/api/prices/ETH%2FBTC')
   })
