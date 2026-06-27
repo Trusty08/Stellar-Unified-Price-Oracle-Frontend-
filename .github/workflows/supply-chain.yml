@@ -84,7 +84,7 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          node - <<'EOF'
+          node --input-type=module - <<'EOF'
           import { readFileSync, writeFileSync } from 'node:fs'
           import { createHash } from 'node:crypto'
 
